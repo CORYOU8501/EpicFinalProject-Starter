@@ -1,22 +1,25 @@
 import java.util.Scanner;
+import java.util.ArrayList;
 
 /**
  * Operation Nightfall
- * Final Project - Week 1
+ * Final Project - Week 2
  *
- * Controls the mission control menu, operator registration,
- * mission environments, and future gameplay.
+ * Controls Mission Control, operator registration,
+ * mission environments, and tactical team management.
  */
 public class Game {
 
     private Scanner input;
     private Player player;
     private boolean running;
+    private ArrayList<TacticalOperator> tacticalTeam;
 
-    // Prepares the game when the program starts.
+    // Prepares the game and tactical team collection.
     public Game() {
         input = new Scanner(System.in);
         running = true;
+        tacticalTeam = new ArrayList<>();
     }
 
     // Starts Mission Control and keeps the menu running.
@@ -25,7 +28,7 @@ public class Game {
 
         System.out.println("Welcome to Operation Nightfall!");
         System.out.println("Your mission begins with preparation.");
-        System.out.println("Register your operator and prepare for deployment.");
+        System.out.println("Assemble your tactical team for deployment.");
 
         while (running) {
             displayMenu();
@@ -50,11 +53,19 @@ public class Game {
                     break;
 
                 case 5:
+                    registerTacticalOperator();
+                    break;
+
+                case 6:
+                    displayTacticalTeam();
+                    break;
+
+                case 7:
                     exitGame();
                     break;
 
                 default:
-                    System.out.println("Invalid selection. Choose a number from 1 to 5.");
+                    System.out.println("Invalid selection. Choose a number from 1 to 7.");
             }
         }
 
@@ -71,7 +82,9 @@ public class Game {
         System.out.println("2. Select Mission Environment");
         System.out.println("3. View Operator Profile");
         System.out.println("4. Begin Mission Briefing");
-        System.out.println("5. Exit Mission Control");
+        System.out.println("5. Recruit Tactical Team Member");
+        System.out.println("6. View Tactical Team Roster");
+        System.out.println("7. Exit Mission Control");
         System.out.println("=========================================");
     }
 
@@ -94,7 +107,7 @@ public class Game {
 
         System.out.println();
         System.out.println("Operator registration successful!");
-        System.out.println("Welcome to Operation Nightfall, " 
+        System.out.println("Welcome to Operation Nightfall, "
             + player.getName() + "!");
         System.out.println("Your mission file has been created.");
     }
@@ -160,10 +173,11 @@ public class Game {
                 : player.getGameMode().getDisplayName()));
 
         System.out.println("Current Status: Awaiting Deployment");
+        System.out.println("Assigned Team Members: " + tacticalTeam.size());
         System.out.println("=========================================");
     }
 
-    // Placeholder for future missions and gameplay features.
+    // Provides the current mission briefing.
     private void runPlaceholderAction() {
         if (player == null) {
             System.out.println("You must register an operator first.");
@@ -188,11 +202,83 @@ public class Game {
         System.out.println("MISSION OBJECTIVE:");
         System.out.println("Prepare for deployment into your assigned environment.");
         System.out.println("Review your operator profile and await mission orders.");
+        System.out.println("Tactical Team Strength: " + tacticalTeam.size());
         System.out.println();
         System.out.println("MISSION STATUS: PREPARATION PHASE");
         System.out.println("Additional missions will become available");
         System.out.println("as the project develops.");
         System.out.println("======================================");
+    }
+
+    // Creates a new tactical operator and adds it to the collection.
+    private void registerTacticalOperator() {
+        Utils.printHeader("TACTICAL TEAM RECRUITMENT");
+
+        String callSign = Utils.readNonEmptyString(
+            input, "Enter tactical call sign: "
+        );
+
+        String specialty = Utils.readNonEmptyString(
+            input, "Enter operator specialty: "
+        );
+
+        int readinessLevel = Utils.readInt(
+            input, "Enter readiness level (0-100): "
+        );
+
+        while (readinessLevel < 0 || readinessLevel > 100) {
+            System.out.println("Readiness must be between 0 and 100.");
+
+            readinessLevel = Utils.readInt(
+                input, "Enter readiness level again: "
+            );
+        }
+
+        String missionZone = Utils.readNonEmptyString(
+            input, "Enter assigned mission zone: "
+        );
+
+        TacticalOperator recruit = new TacticalOperator(
+            callSign, specialty, readinessLevel, missionZone
+        );
+
+        tacticalTeam.add(recruit);
+
+        System.out.println();
+        System.out.println("Recruitment successful!");
+        System.out.println(callSign + " has joined Operation Nightfall.");
+        System.out.println("Total team members: " + tacticalTeam.size());
+    }
+
+    // Displays every tactical operator stored in the ArrayList.
+    private void displayTacticalTeam() {
+        Utils.printHeader("TACTICAL TEAM ROSTER");
+
+        if (tacticalTeam.isEmpty()) {
+            System.out.println("No tactical operators have been recruited.");
+            System.out.println("Select Option 5 to assemble your team.");
+            return;
+        }
+
+        int totalReadiness = 0;
+
+        for (TacticalOperator member : tacticalTeam) {
+            member.displayOperator();
+            totalReadiness += member.getReadinessLevel();
+        }
+
+        double averageReadiness =
+            (double) totalReadiness / tacticalTeam.size();
+
+        System.out.println("Total Operators: " + tacticalTeam.size());
+        System.out.printf("Team Readiness Average: %.1f%%%n",
+            averageReadiness);
+
+        if (averageReadiness >= 80) {
+            System.out.println("Team Status: Deployment Ready");
+        } else {
+            System.out.println("Team Status: Additional Training Required");
+        }
     }
 
     // Safely ends the game loop.
